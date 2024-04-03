@@ -2,7 +2,7 @@ name: CICD Reports
 run-name: Reports - ${{ github.event.workflow_run.name }}
 on:
   workflow_run:
-    workflows: ['Maven CICD Pipeline'] 
+    workflows: ['Maven CICD Pipeline']
     types: [completed]
 
 permissions:
@@ -17,6 +17,7 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
+
       - name: Download Workflow Data
         id: data-download
         uses: dawidd6/action-download-artifact@v2
@@ -79,7 +80,6 @@ jobs:
               test_elapsed=${{ steps.test-reporter.outputs.time }}
             fi
             
-            
             if [[ "$status" == "SUCCESS" ]]; then
               echo "status_icon=✅" >> $GITHUB_OUTPUT
             else
@@ -95,7 +95,6 @@ jobs:
             else 
                echo "report_type=$trigger_event_name" >> $GITHUB_OUTPUT
             fi
-            
           
             echo "json=$json" >> $GITHUB_OUTPUT
             echo "trigger_event_name=$trigger_event_name" >> $GITHUB_OUTPUT
@@ -123,8 +122,30 @@ jobs:
             echo "test_failed=$test_failed" >> $GITHUB_OUTPUT
             echo "test_skipped=$test_skipped" >> $GITHUB_OUTPUT
             echo "test_elapsed=$test_elapsed" >> $GITHUB_OUTPUT
-          
           fi
+
+      - name: Create message
+        id: create-message
+        run: |
+          run_id_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.workflow-data.outputs.action_run_url }}
+          icon_url=https://slackmojis.com/emojis/5432-this-is-fine/download
+          
+          echo "run_id_url=run_id_url" >> $GITHUB_OUTPUT
+          echo "icon_url=$icon_url" >> $GITHUB_OUTPUT
+        if: github.ref_name == 'master' && steps.workflow-data.outputs.status != 'SUCCESS'
+
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2.3.0
+        env:
+          SLACK_WEBHOOK: ${{ secrets.MASTER_BUILD_SLACK_WEBHOOK }}
+          SLACK_USERNAME: dotBot
+          SLACK_TITLE: "Broken build!"
+          SLACK_MSG_AUTHOR: " "
+          MSG_MINIMAL: true
+          SLACK_FOOTER: ""
+          SLACK_ICON: ${{ steps.create-message.outputs.icon_url }}
+          SLACK_MESSAGE: "Attention <!channel>!\nBroken build at `${{ github.ref_name }}`.\nPlease check the run at: ${{ $steps.create-message.outputs.run_id_url }}"
+        if: github.ref_name == 'master' && steps.workflow-data.outputs.status != 'SUCCESS'
 
       - name: Prepare Slack Message Payload
         id: prepare-slack-message
@@ -206,6 +227,7 @@ jobs:
           )
           echo "payload=$(echo $payload | jq -c .)" >> $GITHUB_OUTPUT
           echo "payload=$payload"
+
       - name: Post to Slack
         if: steps.workflow-data.outputs.has-json == 'true' && github.repository == 'dotcms/core'
         uses: slackapi/slack-github-action@v1.24.0
