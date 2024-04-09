@@ -67,7 +67,6 @@ jobs:
             branch_url="https://github.com/$source_repository/tree/$branch"
             commit_id_url="https://github.com/$source_repository/pull/$pr_number/commits/$head_sha"
             test_results_url="https://github.com/$source_repository/pull/${pr_number}/checks"
-            icon_url="https://slackmojis.com/emojis/5432-this-is-fine/download"
             
             if [[ -z "${{ steps.test-reporter.outputs.conclusion }}" ]]; then
               test_conclusion="Not Run"
@@ -125,9 +124,8 @@ jobs:
             echo "test_failed=$test_failed" >> $GITHUB_OUTPUT
             echo "test_skipped=$test_skipped" >> $GITHUB_OUTPUT
             echo "test_elapsed=$test_elapsed" >> $GITHUB_OUTPUT
-            echo "icon_url=$icon_url" >> GITHUB_OUTPUT
           fi
-
+          
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2.3.0
         env:
@@ -137,7 +135,7 @@ jobs:
           SLACK_MSG_AUTHOR: " "
           MSG_MINIMAL: true
           SLACK_FOOTER: ""
-          SLACK_ICON: ${{ steps.workflow-data.outputs.icon_url }}
+          SLACK_ICON: https://slackmojis.com/emojis/5432-this-is-fine/download
           SLACK_MESSAGE: "Attention <!channel>! Broken build at `${{ github.ref_name }}`.\nPlease check the run at: ${{ steps.workflow-data.outputs.action_run_url }}"
         if: steps.workflow-data.outputs.status != 'SUCCESS'
 
