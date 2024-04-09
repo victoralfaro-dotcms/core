@@ -26,6 +26,7 @@ public class BulkEmbeddingsRunner implements Runnable {
 
     @Override
     public void run() {
+        blah();
         for (String inode : inodes) {
             try {
 
