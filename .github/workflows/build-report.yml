@@ -145,7 +145,7 @@ jobs:
           MSG_MINIMAL: true
           SLACK_FOOTER: ""
           SLACK_ICON: ${{ steps.create-message.outputs.icon_url }}
-          SLACK_MESSAGE: "Attention <!channel>!\nBroken build at `${{ github.ref_name }}`.\nPlease check the run at: ${{ steps.create-message.outputs.run_id_url }}"
+          SLACK_MESSAGE: "Attention <!channel>!Broken build at `${{ github.ref_name }}`.\nPlease check the run at: ${{ steps.create-message.outputs.run_id_url }}"
         if: github.ref_name == 'master' && steps.workflow-data.outputs.status != 'SUCCESS'
 
       - name: Prepare Slack Message Payload
