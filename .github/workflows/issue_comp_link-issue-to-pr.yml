@@ -76,7 +76,7 @@ jobs:
             const prUrl = '${{ inputs.pr_url }}';
             let prList = `PRs:\n- ${prUrl}`;
             let existingCommentId = '';
-            const comments = JSON.parse('${{ steps.get_comments.outputs.comments }}'.replace('\n', '\\n'));
+            const comments = ${{ fromJSON(steps.get_comments.outputs.comments) }};
             
             for(comment of comments) {
               console.log(`comment: ${JSON.stringify(comment, null, 2)}`);
